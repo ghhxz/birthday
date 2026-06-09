@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>🎲 Игра: 10 лет приключений!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;900&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 10px;
+            position: relative;
+            touch-action: manipulation;
+        }
+
+        /* ===== ЗВЁЗДЫ НА ФОНЕ ===== */
+        .stars {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star-particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* ===== ГИРЛЯНДА СВЕРХУ ===== */
+        .garland-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            z-index: 50;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .garland-wire {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 40px;
+        }
+
+        .garland-wire svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .garland-light {
+            position: absolute;
+            width: clamp(14px, 3vw, 22px);
+            height: clamp(20px, 4vw, 32px);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: lightGlow 1.5s ease-in-out infinite;
+            box-shadow: 0 0 15px currentColor, 0 0 30px currentColor;
+        }
+
+        .garland-light::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        @keyframes lightGlow {
+            0%, 100% { 
+                opacity: 1; 
+                filter: brightness(1);
+                transform: translateY(0);
+            }
+            50% { 
+                opacity: 0.7; 
+                filter: brightness(1.3);
+                transform: translateY(2px);
+            }
+        }
+
+        .light-red { background: #ff4757; color: #ff4757; }
+        .light-yellow { background: #ffd700; color: #ffd700; }
+        .light-blue { background: #3742fa; color: #3742fa; }
+        .light-green { background: #2ed573; color: #2ed573; }
+        .light-purple { background: #a55eea; color: #a55eea; }
+        .light-pink { background: #ff6b9d; color: #ff6b9d; }
+
+        /* ===== ГИРЛЯНДА ИЗ ФЛАЖКОВ ===== */
+        .flags-garland {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            z-index: 45;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding: 0 10px;
+        }
+
+        .flag {
+            width: 0;
+            height: 0;
+            border-left: clamp(12px, 2.5vw, 20px) solid transparent;
+            border-right: clamp(12px, 2.5vw, 20px) solid transparent;
+            border-top: clamp(25px, 5vw, 40px) solid;
+            animation: flagWave 3s ease-in-out infinite;
+            transform-origin: top center;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        @keyframes flagWave {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        .flag:nth-child(odd) { animation-delay: 0.5s; }
+        .flag:nth-child(3n) { animation-delay: 1s; }
+
+        /* ===== ВОЗДУШНЫЕ ШАРЫ ===== */
+        .balloon {
+            position: fixed;
+            width: clamp(35px, 7vw, 60px);
+            height: clamp(45px, 9vw, 75px);
+            border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
+            opacity: 0.7;
+            z-index: 5;
+            pointer-events: none;
+            animation: balloonFloat 8s ease-in-out infinite;
+        }
+
+        .balloon::before {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 40px;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 8px solid;
+            border-top-color: inherit;
+        }
+
+        @keyframes balloonFloat {
+            0%, 100% { 
+                transform: translateY(0) translateX(0) rotate(-3deg); 
+            }
+            25% { 
+                transform: translateY(-30px) translateX(10px) rotate(3deg); 
+            }
+            50% { 
+                transform: translateY(-15px) translateX(-10px) rotate(-2deg); 
+            }
+            75% { 
+                transform: translateY(-40px) translateX(5px) rotate(2deg); 
+            }
+        }
+
+        /* ===== ПЛАВАЮЩИЕ ЧАСТИЦЫ/БЛЁСТКИ ===== */
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 3;
+            animation: sparkleFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes sparkleFloat {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg) scale(1); 
+                opacity: 0.6;
+            }
+            50% { 
+                transform: translateY(-50px) rotate(180deg) scale(1.3); 
+                opacity: 1;
+            }
+        }
+
+        /* ===== ЗАГОЛОВОК ===== */
+        .game-title {
+            font-family: 'Pacifico', cursive;
+            font-size: clamp(1.8em, 6vw, 3.5em);
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            text-align: center;
+            margin-top: 70px;
+            margin-bottom: 15px;
+            animation: titleGlow 2s ease-in-out infinite, titleFloat 3s ease-in-out infinite;
+            position: relative;
+            z-index: 10;
+            padding: 0 10px;
+            line-height: 1.2;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: brightness(1) drop-shadow(0 0 20px rgba(255, 215, 0, 0.5)); }
+            50% { filter: brightness(1.3) drop-shadow(0 0 40px rgba(255, 215, 0, 0.8)); }
+        }
+
+        @keyframes titleFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+        }
+
+        /* ===== ИГРОВОЕ ПОЛЕ ===== */
+        .game-board {
+            width: min(1000px, 95vw);
+            aspect-ratio: 5/4;
+            max-height: min(800px, 65vh);
+            background: radial-gradient(ellipse at center, #2d5016 0%, #1a3009 100%);
+            border-radius: clamp(15px, 3vw, 30px);
+            box-shadow: 
+                0 clamp(15px, 3vw, 30px) clamp(40px, 6vw, 80px) rgba(0,0,0,0.7),
+                inset 0 0 clamp(75px, 10vw, 150px) rgba(0,0,0,0.4),
+                0 0 0 clamp(10px, 2vw, 20px) #8b4513,
+                0 0 0 clamp(12px, 2.5vw, 25px) #654321;
+            position: relative;
+            transform: perspective(1500px) rotateX(20deg);
+            transform-style: preserve-3d;
+            z-index: 1;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .path-svg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .path-line-svg {
+            stroke: url(#goldGradient);
+            stroke-width: clamp(4px, 1vw, 8px);
+            stroke-linecap: round;
+            fill: none;
+            filter: drop-shadow(0 0 clamp(4px, 1vw, 8px) rgba(255, 215, 0, 0.8));
+        }
+
+        .board-decoration {
+            position: absolute;
+            font-size: clamp(25px, 5vw, 40px);
+            opacity: 0.5;
+            animation: decorationFloat 4s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @keyframes decorationFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(10deg); }
+        }
+
+        /* ===== КЛЕТКИ ===== */
+        .cell {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 
+                0 clamp(5px, 1.5vw, 10px) clamp(15px, 3vw, 30px) rgba(0,0,0,0.4),
+                inset 0 0 clamp(10px, 2vw, 20px) rgba(255,255,255,0.2);
+            border: clamp(3px, 0.8vw, 5px) solid white;
+            font-weight: 900;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+            touch-action: manipulation;
+        }
+
+        .cell:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        .cell:hover {
+            transform: translate(-50%, -50%) scale(1.3) translateY(-15px) rotate(5deg);
+            box-shadow: 
+                0 clamp(10px, 2.5vw, 20px) clamp(25px, 5vw, 50px) rgba(0,0,0,0.6),
+                0 0 clamp(20px, 4vw, 40px) rgba(255, 215, 0, 0.8);
+            z-index: 100;
+        }
+
+        .cell.visited {
+            border-color: #ffd700;
+            box-shadow: 
+                0 clamp(5px, 1.5vw, 10px) clamp(15px, 3vw, 30px) rgba(0,0,0,0.4),
+                0 0 clamp(15px, 3vw, 30px) rgba(255, 215, 0, 0.6);
+            animation: visitedPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes visitedPulse {
+            0%, 100% { box-shadow: 0 clamp(5px, 1.5vw, 10px) clamp(15px, 3vw, 30px) rgba(0,0,0,0.4), 0 0 clamp(15px, 3vw, 30px) rgba(255, 215, 0, 0.6); }
+            50% { box-shadow: 0 clamp(5px, 1.5vw, 10px) clamp(15px, 3vw, 30px) rgba(0,0,0,0.4), 0 0 clamp(25px, 5vw, 50px) rgba(255, 215, 0, 0.9); }
+        }
+
+        .cell-size-small { 
+            width: clamp(50px, 10vw, 70px); 
+            height: clamp(50px, 10vw, 70px); 
+            font-size: clamp(1em, 2.5vw, 1.3em); 
+        }
+        .cell-size-medium { 
+            width: clamp(65px, 13vw, 90px); 
+            height: clamp(65px, 13vw, 90px); 
+            font-size: clamp(1.3em, 3vw, 1.6em); 
+        }
+        .cell-size-large { 
+            width: clamp(80px, 16vw, 110px); 
+            height: clamp(80px, 16vw, 110px); 
+            font-size: clamp(1.6em, 3.5vw, 2em); 
+        }
+        .cell-size-xl { 
+            width: clamp(95px, 19vw, 130px); 
+            height: clamp(95px, 19vw, 130px); 
+            font-size: clamp(1.9em, 4vw, 2.3em); 
+        }
+
+        .cell-1 { background: linear-gradient(135deg, #ff6b6b, #ee5a6f); }
+        .cell-2 { background: linear-gradient(135deg, #feca57, #ff9f43); }
+        .cell-3 { background: linear-gradient(135deg, #48dbfb, #0abde3); }
+        .cell-4 { background: linear-gradient(135deg, #ff9ff3, #f368e0); }
+        .cell-5 { background: linear-gradient(135deg, #54a0ff, #2e86de); }
+        .cell-6 { background: linear-gradient(135deg, #5f27cd, #341f97); }
+        .cell-7 { background: linear-gradient(135deg, #1dd1a1, #10ac84); }
+        .cell-8 { background: linear-gradient(135deg, #ff6348, #ee5a24); }
+        .cell-9 { background: linear-gradient(135deg, #7bed9f, #2ed573); }
+        .cell-10 { 
+            background: linear-gradient(135deg, #ffd700, #ffa502);
+            animation: finalCellGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes finalCellGlow {
+            0%, 100% { box-shadow: 0 clamp(5px, 1.5vw, 10px) clamp(15px, 3vw, 30px) rgba(0,0,0,0.4), 0 0 clamp(20px, 4vw, 40px) rgba(255, 215, 0, 0.6); }
+            50% { box-shadow: 0 clamp(5px, 1.5vw, 10px) clamp(15px, 3vw, 30px) rgba(0,0,0,0.4), 0 0 clamp(40px, 8vw, 80px) rgba(255, 215, 0, 1); }
+        }
+
+        .cell-icon { 
+            font-size: 0.5em; 
+            margin-top: clamp(2px, 0.5vw, 5px);
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));
+        }
+
+        .player-token {
+            position: absolute;
+            width: clamp(40px, 8vw, 60px);
+            height: clamp(40px, 8vw, 60px);
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border-radius: 50%;
+            border: clamp(3px, 0.8vw, 5px) solid #fff;
+            box-shadow: 
+                0 clamp(4px, 1vw, 8px) clamp(12px, 3vw, 25px) rgba(0,0,0,0.5),
+                0 0 clamp(15px, 3vw, 30px) rgba(255, 215, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(20px, 4vw, 28px);
+            transition: all 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 50;
+            animation: tokenFloat 2s ease-in-out infinite, tokenGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes tokenFloat {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-8px); }
+        }
+
+        @keyframes tokenGlow {
+            0%, 100% { box-shadow: 0 clamp(4px, 1vw, 8px) clamp(12px, 3vw, 25px) rgba(0,0,0,0.5), 0 0 clamp(15px, 3vw, 30px) rgba(255, 215, 0, 0.8); }
+            50% { box-shadow: 0 clamp(4px, 1vw, 8px) clamp(12px, 3vw, 25px) rgba(0,0,0,0.5), 0 0 clamp(25px, 5vw, 50px) rgba(255, 215, 0, 1); }
+        }
+
+        /* ===== КНОПКА ЗВУКА ===== */
+        .sound-control {
+            position: fixed;
+            top: clamp(85px, 12vh, 100px);
+            left: clamp(15px, 3vw, 25px);
+            width: clamp(45px, 9vw, 60px);
+            height: clamp(45px, 9vw, 60px);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            border: 3px solid rgba(255, 215, 0, 0.6);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(20px, 4vw, 28px);
+            z-index: 200;
+            transition: all 0.3s ease;
+            box-shadow: 0 clamp(3px, 1vw, 5px) clamp(10px, 2vw, 20px) rgba(0,0,0,0.3);
+            animation: soundButtonPulse 3s ease-in-out infinite;
+        }
+
+        .sound-control:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes soundButtonPulse {
+            0%, 100% { box-shadow: 0 clamp(3px, 1vw, 5px) clamp(10px, 2vw, 20px) rgba(0,0,0,0.3); }
+            50% { box-shadow: 0 clamp(3px, 1vw, 5px) clamp(10px, 2vw, 20px) rgba(0,0,0,0.3), 0 0 clamp(12px, 2.5vw, 25px) rgba(255, 215, 0, 0.4); }
+        }
+
+        .sound-control.muted {
+            opacity: 0.6;
+            border-color: rgba(255, 100, 100, 0.6);
+        }
+
+        .sound-hint {
+            position: fixed;
+            top: clamp(155px, 18vh, 170px);
+            left: clamp(15px, 3vw, 25px);
+            background: rgba(255, 215, 0, 0.9);
+            color: #2c1810;
+            padding: clamp(8px, 1.5vw, 10px) clamp(15px, 3vw, 20px);
+            border-radius: 20px;
+            font-size: clamp(0.8em, 2vw, 0.9em);
+            font-weight: 700;
+            z-index: 200;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.5s ease;
+            pointer-events: none;
+            box-shadow: 0 clamp(3px, 1vw, 5px) clamp(8px, 2vw, 15px) rgba(0,0,0,0.3);
+            max-width: calc(100vw - 40px);
+            text-align: center;
+        }
+
+        .sound-hint.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== МОДАЛЬНОЕ ОКНО С КАРТОЧКОЙ ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: modalFadeIn 0.5s ease;
+            padding: clamp(10px, 2vw, 20px);
+            overflow-y: auto;
+        }
+
+        .modal.active { display: flex; }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            background: #f4e8d0;
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(0,0,0,0.03) 50px, rgba(0,0,0,0.03) 51px),
+                repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(0,0,0,0.03) 50px, rgba(0,0,0,0.03) 51px);
+            border-radius: clamp(15px, 3vw, 25px);
+            padding: clamp(25px, 5vw, 50px);
+            max-width: min(700px, 95vw);
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 
+                0 clamp(15px, 3vw, 30px) clamp(40px, 8vw, 80px) rgba(0,0,0,0.7),
+                inset 0 0 clamp(20px, 4vw, 40px) rgba(0,0,0,0.1);
+            border: clamp(5px, 1.5vw, 10px) solid #fff;
+            outline: clamp(2px, 0.5vw, 4px) dashed #d4a574;
+            outline-offset: clamp(-10px, -2vw, -20px);
+            animation: cardAppear 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes cardAppear {
+            from { transform: scale(0.3) rotate(-15deg); opacity: 0; }
+            to { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* Декоративные уголки карточки */
+        .card-corner {
+            position: absolute;
+            font-size: clamp(25px, 5vw, 40px);
+            z-index: 5;
+            pointer-events: none;
+        }
+        .card-corner-tl { top: 10px; left: 15px; }
+        .card-corner-tr { top: 10px; right: 15px; }
+        .card-corner-bl { bottom: 10px; left: 15px; }
+        .card-corner-br { bottom: 10px; right: 15px; }
+
+        .washi-tape {
+            position: absolute;
+            height: clamp(20px, 4vw, 30px);
+            width: clamp(80px, 16vw, 120px);
+            opacity: 0.8;
+            box-shadow: 2px 2px clamp(4px, 1vw, 8px) rgba(0,0,0,0.15);
+        }
+        .tape-1 { 
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); 
+            top: clamp(-10px, -2vw, -15px); left: 50%; 
+            transform: translateX(-50%) rotate(-3deg); 
+        }
+        .tape-2 { 
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); 
+            bottom: clamp(-10px, -2vw, -15px); right: clamp(30px, 6vw, 60px); 
+            transform: rotate(4deg); 
+        }
+
+        .card h2 {
+            font-family: 'Pacifico', cursive;
+            font-size: clamp(1.5em, 4vw, 2.5em);
+            color: #764ba2;
+            text-align: center;
+            margin-bottom: clamp(15px, 3vw, 30px);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.2;
+        }
+
+        .card-text {
+            font-size: clamp(1em, 2.5vw, 1.3em);
+            line-height: 1.7;
+            color: #4a4a4a;
+            text-align: center;
+            margin: clamp(15px, 3vw, 25px) 0;
+        }
+        .card-text p { margin: clamp(10px, 2vw, 18px) 0; }
+
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: clamp(15px, 3vw, 25px);
+            margin: clamp(20px, 4vw, 35px) 0;
+        }
+
+        .polaroid {
+            background: white;
+            padding: clamp(8px, 2vw, 15px);
+            box-shadow: 0 clamp(4px, 1vw, 8px) clamp(10px, 2vw, 20px) rgba(0,0,0,0.25);
+            transform: rotate(-3deg);
+            transition: transform 0.4s ease;
+        }
+        .polaroid:nth-child(even) { transform: rotate(3deg); }
+        .polaroid:hover { 
+            transform: rotate(0deg) scale(1.08);
+            box-shadow: 0 clamp(6px, 1.5vw, 12px) clamp(15px, 3vw, 30px) rgba(0,0,0,0.35);
+        }
+        .polaroid img { 
+            width: 100%; 
+            height: clamp(120px, 25vw, 200px); 
+            object-fit: cover;
+            border-radius: 3px;
+        }
+        .polaroid-caption { 
+            text-align: center; 
+            font-family: 'Pacifico', cursive; 
+            color: #666; 
+            font-size: clamp(0.8em, 2vw, 1em); 
+            margin-top: clamp(5px, 1vw, 10px); 
+        }
+
+        .polaroid.single-photo {
+            max-width: min(350px, 90%);
+            margin: 0 auto;
+            transform: rotate(-2deg);
+        }
+        .polaroid.single-photo img { height: clamp(180px, 35vw, 280px); }
+
+        .close-btn {
+            position: absolute;
+            top: clamp(10px, 2vw, 20px); right: clamp(10px, 2vw, 20px);
+            width: clamp(40px, 8vw, 50px); height: clamp(40px, 8vw, 50px);
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: clamp(1.5em, 3vw, 1.8em);
+            cursor: pointer;
+            box-shadow: 0 clamp(3px, 1vw, 5px) clamp(8px, 2vw, 15px) rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .close-btn:hover { 
+            transform: scale(1.15) rotate(90deg); 
+            background: linear-gradient(135deg, #ee5a6f, #ff6b6b);
+        }
+
+        .confetti {
+            position: fixed;
+            width: clamp(8px, 2vw, 12px); height: clamp(8px, 2vw, 12px);
+            top: -15px;
+            animation: fall linear forwards;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .instructions {
+            background: rgba(255,255,255,0.15);
+            padding: clamp(12px, 2.5vw, 20px) clamp(25px, 5vw, 40px);
+            border-radius: 50px;
+            color: white;
+            margin-bottom: clamp(15px, 3vh, 25px);
+            font-size: clamp(0.95em, 2.5vw, 1.2em);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 clamp(3px, 1vw, 5px) clamp(10px, 2vw, 20px) rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: min(600px, 95vw);
+        }
+
+        .progress-indicator {
+            position: fixed;
+            top: clamp(85px, 12vh, 100px); right: clamp(15px, 3vw, 25px);
+            background: rgba(255,255,255,0.2);
+            padding: clamp(10px, 2vw, 18px) clamp(18px, 3.5vw, 30px);
+            border-radius: 50px;
+            color: white;
+            font-weight: 700;
+            font-size: clamp(0.9em, 2vw, 1.1em);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 clamp(3px, 1vw, 5px) clamp(10px, 2vw, 20px) rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        /* ===== АДАПТИВНОСТЬ ===== */
+        @media (max-width: 480px) {
+            .game-board {
+                transform: perspective(1000px) rotateX(10deg);
+            }
+            .cell:hover {
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .game-board {
+                transform: perspective(1200px) rotateX(15deg);
+            }
+        }
+
+        @media (max-height: 500px) and (orientation: landscape) {
+            .game-board {
+                max-height: 85vh;
+                transform: perspective(1000px) rotateX(5deg);
+            }
+            .game-title {
+                font-size: clamp(1.5em, 4vw, 2.5em);
+                margin-top: 60px;
+                margin-bottom: 10px;
+            }
+        }
+
+        @media (pointer: coarse) {
+            .game-board {
+                transform: perspective(1000px) rotateX(10deg);
+            }
+            .cell:active {
+                transform: translate(-50%, -50%) scale(0.92);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" loop preload="auto">
+        <source src="background-music.mp3" type="audio/mpeg">
+        <source src="background-music.ogg" type="audio/ogg">
+    </audio>
+
+    <!-- Звёзды на фоне -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Гирлянда из лампочек сверху -->
+    <div class="garland-container" id="garlandContainer">
+        <div class="garland-wire">
+            <svg viewBox="0 0 1000 40" preserveAspectRatio="none">
+                <path d="M 0 20 Q 50 35, 100 20 T 200 20 T 300 20 T 400 20 T 500 20 T 600 20 T 700 20 T 800 20 T 900 20 T 1000 20" 
+                      stroke="#555" stroke-width="2" fill="none"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Гирлянда из флажков -->
+    <div class="flags-garland" id="flagsGarland"></div>
+
+    <!-- Воздушные шары -->
+    <div id="balloonsContainer"></div>
+
+    <!-- Плавающие блёстки -->
+    <div id="sparklesContainer"></div>
+
+    <!-- Кнопка звука -->
+    <button class="sound-control" id="soundBtn" aria-label="Управление звуком">🔇</button>
+    <div class="sound-hint" id="soundHint">🎵 Нажми, чтобы включить музыку</div>
+
+    <!-- Прогресс -->
+    <div class="progress-indicator">
+        🎯 Прогресс: <span id="visitedCount">0</span>/10
+    </div>
+
+    <h1 class="game-title">🎲 10 лет приключений! 🎲</h1>
+    
+    <div class="instructions">
+        ✨ Кликай на клетки, чтобы открыть карточки с воспоминаниями! ✨
+    </div>
+
+    <!-- Игровое поле -->
+    <div class="game-board" id="gameBoard">
+        <svg class="path-svg" id="pathSvg" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#ffd700;stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:#ffed4e;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#ffd700;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+        </svg>
+
+        <!-- Декорации на поле -->
+        <div class="board-decoration" style="top: 8%; left: 4%;">🌸</div>
+        <div class="board-decoration" style="top: 15%; right: 6%; animation-delay: 1s;">🌺</div>
+        <div class="board-decoration" style="bottom: 12%; left: 8%; animation-delay: 2s;">🌼</div>
+        <div class="board-decoration" style="bottom: 20%; right: 10%; animation-delay: 0.5s;"></div>
+        <div class="board-decoration" style="top: 45%; left: 2%; animation-delay: 1.5s;">🌷</div>
+        <div class="board-decoration" style="top: 55%; right: 3%; animation-delay: 2.5s;">🌻</div>
+        <div class="board-decoration" style="top: 30%; left: 15%; animation-delay: 0.8s;">🎀</div>
+        <div class="board-decoration" style="bottom: 35%; right: 18%; animation-delay: 1.8s;">🎁</div>
+        <div class="board-decoration" style="top: 70%; left: 25%; animation-delay: 2.2s;">🎈</div>
+        <div class="board-decoration" style="top: 25%; right: 25%; animation-delay: 0.3s;">⭐</div>
+        
+        <div class="player-token" id="playerToken">🌟</div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div class="modal" id="modal">
+        <div class="card" id="cardContent">
+            <button class="close-btn" onclick="closeModal()" aria-label="Закрыть">✕</button>
+            <div class="card-corner card-corner-tl">🎀</div>
+            <div class="card-corner card-corner-tr">🎉</div>
+            <div class="card-corner card-corner-bl">🌟</div>
+            <div class="card-corner card-corner-br">🎈</div>
+            <div class="washi-tape tape-1"></div>
+            <div class="washi-tape tape-2"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== СОЗДАНИЕ ГИРЛЯНДЫ ИЗ ЛАМПОЧЕК =====
+        function createGarland() {
+            const container = document.getElementById('garlandContainer');
+            const colors = ['light-red', 'light-yellow', 'light-blue', 'light-green', 'light-purple', 'light-pink'];
+            const count = Math.floor(window.innerWidth / 60);
+            
+            for (let i = 0; i < count; i++) {
+                const light = document.createElement('div');
+                light.className = `garland-light ${colors[i % colors.length]}`;
+                light.style.left = (i / count * 100) + '%';
+                
+                // Волнообразное расположение
+                const yOffset = Math.sin(i * 0.5) * 15 + 25;
+                light.style.top = yOffset + 'px';
+                light.style.animationDelay = (i * 0.15) + 's';
+                
+                container.appendChild(light);
+            }
+        }
+
+        // ===== СОЗДАНИЕ ГИРЛЯНДЫ ИЗ ФЛАЖКОВ =====
+        function createFlags() {
+            const container = document.getElementById('flagsGarland');
+            const colors = ['#ff4757', '#ffd700', '#3742fa', '#2ed573', '#a55eea', '#ff6b9d', '#ff9f43', '#48dbfb'];
+            const count = Math.floor(window.innerWidth / 50);
+            
+            for (let i = 0; i < count; i++) {
+                const flag = document.createElement('div');
+                flag.className = 'flag';
+                flag.style.borderTopColor = colors[i % colors.length];
+                flag.style.animationDelay = (i * 0.2) + 's';
+                container.appendChild(flag);
+            }
+        }
+
+        // ===== СОЗДАНИЕ ВОЗДУШНЫХ ШАРОВ =====
+        function createBalloons() {
+            const container = document.getElementById('balloonsContainer');
+            const colors = ['#ff4757', '#ffd700', '#3742fa', '#2ed573', '#a55eea', '#ff6b9d'];
+            const count = window.innerWidth < 768 ? 4 : 8;
+            
+            for (let i = 0; i < count; i++) {
+                const balloon = document.createElement('div');
+                balloon.className = 'balloon';
+                balloon.style.background = `radial-gradient(circle at 30% 30%, ${colors[i % colors.length]}ee, ${colors[i % colors.length]})`;
+                balloon.style.color = colors[i % colors.length];
+                balloon.style.left = (Math.random() * 90 + 5) + '%';
+                balloon.style.top = (Math.random() * 60 + 20) + '%';
+                balloon.style.animationDelay = (Math.random() * 5) + 's';
+                balloon.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                container.appendChild(balloon);
+            }
+        }
+
+        // ===== СОЗДАНИЕ БЛЁСТОК =====
+        function createSparkles() {
+            const container = document.getElementById('sparklesContainer');
+            const symbols = ['✨', '⭐', '💫', '', '✦', ''];
+            const count = window.innerWidth < 768 ? 8 : 15;
+            
+            for (let i = 0; i < count; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                sparkle.style.left = (Math.random() * 100) + '%';
+                sparkle.style.top = (Math.random() * 100) + '%';
+                sparkle.style.fontSize = (Math.random() * 15 + 10) + 'px';
+                sparkle.style.animationDelay = (Math.random() * 5) + 's';
+                sparkle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                container.appendChild(sparkle);
+            }
+        }
+
+        // ===== ЗВЁЗДЫ НА ФОНЕ =====
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = window.innerWidth < 768 ? 50 : 100;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-particle';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // ===== УПРАВЛЕНИЕ ЗВУКОМ =====
+        const bgMusic = document.getElementById('bgMusic');
+        const soundBtn = document.getElementById('soundBtn');
+        const soundHint = document.getElementById('soundHint');
+        let isPlaying = false;
+        let soundStarted = false;
+
+        bgMusic.volume = 0.3;
+
+        function toggleSound() {
+            if (!soundStarted) {
+                bgMusic.play().then(() => {
+                    isPlaying = true;
+                    soundStarted = true;
+                    soundBtn.textContent = '🔊';
+                    soundBtn.classList.remove('muted');
+                    soundHint.classList.remove('show');
+                }).catch(() => {
+                    soundHint.classList.add('show');
+                    setTimeout(() => soundHint.classList.remove('show'), 3000);
+                });
+            } else {
+                if (isPlaying) {
+                    bgMusic.pause();
+                    isPlaying = false;
+                    soundBtn.textContent = '🔇';
+                    soundBtn.classList.add('muted');
+                } else {
+                    bgMusic.play();
+                    isPlaying = true;
+                    soundBtn.textContent = '🔊';
+                    soundBtn.classList.remove('muted');
+                }
+            }
+        }
+
+        soundBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSound();
+        });
+
+        setTimeout(() => {
+            if (!soundStarted) {
+                soundHint.classList.add('show');
+                setTimeout(() => soundHint.classList.remove('show'), 4000);
+            }
+        }, 2000);
+
+        // ===== ДАННЫЕ КАРТОЧЕК (фото в корневой папке) =====
+        const cardsData = [
+            {
+                title: "👶 Самые первые дни",
+                text: "<p>Ты только появилась на свет и уже покорила все сердца!</p><p>Твои первые глазки смотрели на мир с любопытством, а первая улыбка освещала всё вокруг.</p><p><strong>Ты подарила нам самое большое счастье!</strong></p>",
+                photos: [
+                    { src: "01_baby.jpg", caption: "Малышка" },
+                    { src: "01_baby2.jpg", caption: "Первая улыбка" }
+                ]
+            },
+            {
+                title: "❤️ Любимая семья",
+                text: "<p>Ты окружена любовью самых близких людей!</p><p>Мама, папа, бабушки и дедушки — все тебя очень любят и гордятся тобой.</p><p><strong>Семья — это твоя крепость и поддержка!</strong></p>",
+                photos: [
+                    { src: "02_family.jpg", caption: "С семьёй" },
+                    { src: "02_family2.jpg", caption: "Семейное счастье" }
+                ]
+            },
+            {
+                title: "🌍 Путешествия и приключения",
+                text: "<p>Ты уже успела побывать в удивительных местах!</p><p>Новые города, красивые пейзажи, незабываемые впечатления — ты собираешь свои приключения как сокровища.</p><p><strong>Мир такой большой и интересный!</strong></p>",
+                photos: [
+                    { src: "03_travel.jpg", caption: "Путешествие" },
+                    { src: "03_travel2.jpg", caption: "Приключения" }
+                ]
+            },
+            {
+                title: "🎨 Творчество и талант",
+                text: "<p>Ты обладаешь настоящим талантом!</p><p>Твои картины наполнены светом, добротой и невероятной фантазией. Ты создаёшь красоту своими руками.</p><p><strong>Творчество — это твоя суперсила!</strong></p>",
+                photos: [
+                    { src: "04_creative.jpg", caption: "Творчество" }
+                ]
+            },
+            {
+                title: "🏆 Шедевр в музее",
+                text: "<p>Твоя картина попала в настоящий музей!</p><p>Это невероятное достижение! Твоё творчество теперь видят тысячи людей. Это только начало большого пути!</p><p><strong>Ты — настоящая художница! </strong></p>",
+                photos: [
+                    { src: "05_museum.jpg", caption: "Картина в музее" },
+                    { src: "05_museum2.jpg", caption: "Талант" }
+                ]
+            },
+            {
+                title: "🌳 Природа и прогулки",
+                text: "<p>Ты любишь бывать на природе!</p><p>Парки, леса, реки — везде ты находишь что-то интересное. Наблюдать за природой, собирать цветы, играть на свежем воздухе.</p><p><strong>Природа дарит тебе вдохновение!</strong></p>",
+                photos: [
+                    { src: "06_nature.jpg", caption: "На природе" },
+                    { src: "06_nature2.jpg", caption: "Прогулки" }
+                ]
+            },
+            {
+                title: "🌟 Улыбки и смех",
+                text: "<p>Твой смех — это самая прекрасная музыка!</p><p>На этих фотографиях ты просто счастливая, искренняя и лучезарная. Твоя улыбка способна осветить любой день.</p><p><strong>Улыбайся чаще, это тебе очень идёт! 😊</strong></p>",
+                photos: [
+                    { src: "07_smile.jpg", caption: "Твой смех" },
+                    { src: "07_smile2.jpg", caption: "Радость" }
+                ]
+            },
+            {
+                title: "🎭 Сказочные образы",
+                text: "<p>В этой роли ты выглядишь просто волшебно!</p><p>Настоящая принцесса из сказки. В тебе есть что-то по-настоящему сказочное и доброе.</p><p><strong>Ты умеешь творить чудеса вокруг себя! ✨</strong></p>",
+                photos: [
+                    { src: "08_fairy.jpg", caption: "Сказочный образ" }
+                ]
+            },
+            {
+                title: "🎠 Развлечения",
+                text: "<p>Качели, карусели, аттракционы — сколько восторга!</p><p>Ты умеешь по-настоящему веселиться и получать удовольствие от каждого момента. Пусть жизнь будет таким же увлекательным парком развлечений!</p><p><strong>Всегда сохраняй этот задор в сердце! 🎡</strong></p>",
+                photos: [
+                    { src: "09_fun.jpg", caption: "Веселье" }
+                ]
+            },
+            {
+                title: "🎂 С 10-ЛЕТИЕМ!",
+                text: "<p style='font-size: 1.4em; color: #764ba2;'><strong> Тебе 10 лет! 🎉</strong></p><p>Целых 10 лет ты даришь нам радость и счастье!</p><p>Ты добрая, талантливая, умная и очень любимая!</p><p style='font-size: 1.2em; margin-top: 20px;'><strong>С Днём Рождения, наша принцесса! 💖</strong></p><p>Пусть все твои мечты сбываются!</p>",
+                photos: [
+                    { src: "10_celebration.jpg", caption: "С Днём Рождения!" }
+                ],
+                isFinal: true
+            }
+        ];
+
+        const cellPositions = [
+            { x: 8, y: 85 }, { x: 22, y: 75 }, { x: 38, y: 80 },
+            { x: 52, y: 65 }, { x: 68, y: 70 }, { x: 82, y: 55 },
+            { x: 75, y: 38 }, { x: 58, y: 32 }, { x: 42, y: 25 }, { x: 50, y: 10 }
+        ];
+
+        const cellSizes = ['medium', 'small', 'medium', 'large', 'medium', 'large', 'small', 'medium', 'large', 'xl'];
+        const icons = ['', '❤️', '', '🎨', '', '', '🌟', '', '', '🎂'];
+        let visitedCells = new Set();
+
+        function createPathLines() {
+            const svg = document.getElementById('pathSvg');
+            const board = document.getElementById('gameBoard');
+            const boardWidth = board.offsetWidth;
+            const boardHeight = board.offsetHeight;
+
+            let pathData = '';
+            cellPositions.forEach((pos, index) => {
+                const x = (pos.x / 100) * boardWidth;
+                const y = (pos.y / 100) * boardHeight;
+                pathData += (index === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+            });
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', pathData);
+            path.setAttribute('class', 'path-line-svg');
+            svg.appendChild(path);
+        }
+
+        function createCells() {
+            const board = document.getElementById('gameBoard');
+            cardsData.forEach((card, index) => {
+                const cell = document.createElement('div');
+                cell.className = `cell cell-${index + 1} cell-size-${cellSizes[index]}`;
+                cell.style.left = cellPositions[index].x + '%';
+                cell.style.top = cellPositions[index].y + '%';
+                cell.style.transform = 'translate(-50%, -50%)';
+                cell.innerHTML = `<div>${index + 1}</div><div class="cell-icon">${icons[index]}</div>`;
+                cell.onclick = () => openCard(index);
+                board.appendChild(cell);
+            });
+        }
+
+        function positionToken(index) {
+            const token = document.getElementById('playerToken');
+            const pos = cellPositions[index];
+            token.style.left = pos.x + '%';
+            token.style.top = pos.y + '%';
+        }
+
+        function openCard(index) {
+            const card = cardsData[index];
+            const modal = document.getElementById('modal');
+            const cardContent = document.getElementById('cardContent');
+            
+            if (!soundStarted) toggleSound();
+            
+            let photosHTML = '';
+            if (card.photos) {
+                const isSingle = card.photos.length === 1;
+                photosHTML = `<div class="photos-grid" style="${isSingle ? 'grid-template-columns: 1fr; max-width: 370px; margin: 35px auto;' : ''}">`;
+                card.photos.forEach(photo => {
+                    photosHTML += `
+                        <div class="polaroid ${isSingle ? 'single-photo' : ''}">
+                            <img src="${photo.src}" alt="${photo.caption}">
+                            <div class="polaroid-caption">${photo.caption}</div>
+                        </div>
+                    `;
+                });
+                photosHTML += '</div>';
+            }
+
+            cardContent.innerHTML = `
+                <button class="close-btn" onclick="closeModal()" aria-label="Закрыть">✕</button>
+                <div class="card-corner card-corner-tl">🎀</div>
+                <div class="card-corner card-corner-tr"></div>
+                <div class="card-corner card-corner-bl">🌟</div>
+                <div class="card-corner card-corner-br">🎈</div>
+                <div class="washi-tape tape-1"></div>
+                <div class="washi-tape tape-2"></div>
+                <h2>${card.title}</h2>
+                ${photosHTML}
+                <div class="card-text">${card.text}</div>
+            `;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            positionToken(index);
+            markCellVisited(index);
+            
+            if (card.isFinal) {
+                setTimeout(() => createConfetti(), 500);
+            }
+        }
+
+        function markCellVisited(index) {
+            if (!visitedCells.has(index)) {
+                visitedCells.add(index);
+                const cells = document.querySelectorAll('.cell');
+                cells[index].classList.add('visited');
+                document.getElementById('visitedCount').textContent = visitedCells.size;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#ffd700', '#ff9a9e', '#a8edea'];
+            const confettiCount = window.innerWidth < 768 ? 100 : 200;
+            for (let i = 0; i < confettiCount; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.width = (Math.random() * 12 + 6) + 'px';
+                    confetti.style.height = (Math.random() * 12 + 6) + 'px';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 15);
+            }
+        }
+
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                const existingPath = document.querySelector('.path-line-svg');
+                if (existingPath) existingPath.remove();
+                createPathLines();
+            }, 250);
+        });
+
+        // Инициализация всех украшений
+        createStars();
+        createGarland();
+        createFlags();
+        createBalloons();
+        createSparkles();
+        createCells();
+        setTimeout(() => {
+            createPathLines();
+            positionToken(0);
+        }, 100);
+    </script>
+</body>
+</html>
